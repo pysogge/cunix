@@ -1,0 +1,11 @@
+*.DS_Store
+*.o
+*.out
+.vscode
+
+stash/
+secrets/
+output/
+obj/
+
+.depend
