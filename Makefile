@@ -2,11 +2,22 @@
 # Pysogge
 # 
 # $: make init		## generate default required dir structure
-# $: make			## builds executable file 'cunix'
+# $: make build		## builds executable file 'cunix'
+# $: make run		## runs 'cunix' with default arguments
 # $: make depend	## generates dependencies for all files in the src directory
 # $: make clean 	## removes all files in the current directory       	
 # $: make test		## builds and runs all tests
+# $: make help		## shows help options
 #
+
+help:
+	@echo "Usage: make [target]"
+	@echo "	init:		generate default required dir structure"
+	@echo "	build:		builds the executable file 'cunix'"
+	@echo "	run:		runs 'cunix' with default arguments"
+	@echo "	depend:		generates dependencies for all files in the src directory"
+	@echo "	clean:		removes all files in the current directory"
+	@echo "	test:		builds and runs all tests"
 
 # default dir structure
 DIRS = {include,input,output,lib,obj,src,stash,test}
@@ -45,7 +56,7 @@ MAIN = cunix
 
 .PHONY: depend clean test all
 
-all:    $(MAIN)
+build:    $(MAIN)
 		$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJSD) $(LFLAGS) $(LIBS)
 		@echo  cunix has been compiled
 
@@ -70,5 +81,8 @@ include .depend
 
 init:
 	@mkdir -vp $(DIRS)
+
+run:
+	./$(MAIN)
 
 # End of File - Do Not Delete
