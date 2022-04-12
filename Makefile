@@ -12,15 +12,15 @@
 
 help:
 	@echo "Usage: make [target]"
-	@echo "	init:		generate default required dir structure"
-	@echo "	build:		builds the executable file 'cunix'"
-	@echo "	run:		runs 'cunix' with default arguments"
-	@echo "	depend:		generates dependencies for all files in the src directory"
-	@echo "	clean:		removes all files in the current directory"
-	@echo "	test:		builds and runs all tests"
+	@echo "	init:			generate default required dir structure"
+	@echo "	build:			builds the executable file 'cunix'"
+	@echo "	run:			runs 'cunix' with default arguments"
+	@echo "	depend:			generates dependencies for all files in the src directory"
+	@echo "	clean:			removes all files in the current directory"
+	@echo "	build-tests:	builds all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,stash,test}
+DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,depn}
 
 # define the C compiler to use
 CC = gcc
@@ -50,7 +50,18 @@ OBJSD = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 
 # define the executable file 
-MAIN = cunix
+_MAIN = cunix
+EXECDIR = exc
+MAIN = $(patsubst %,$(EXECDIR)/%,$(_MAIN))
+
+# TESTDIR = test
+# TESTSRCDIR = testsrc
+# TESTOBJDIR = testobj
+# TESTS = $(patsubst %,$(TESTDIR)/%,$(_TESTS))
+# TEST_SRC = $(_TESTS:=.c)
+# TEST_OBJ = $(_TESTS:=.o)
+# TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
+# TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
 
 # main build rules
 
@@ -66,23 +77,73 @@ $(MAIN): $(OBJSD)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 		$(CC) -I$(INCLDIR) -c $< -o $@
 
-clean:
-		$(RM) ./$(OBJDIR)/*.o *~ $(MAIN)
-		$(RM) ./$(SRCDIR)/*.o
-		$(RM) ./.depend
+## Dependency generation rules
 
-depend: .depend
+DEPNDIR = depn
+_DEPN = .depend
+DEPN = $(patsubst %,$(DEPNDIR)/%,$(_DEPN))
+depend: $(DEPN)
 
-.depend: $(SRCS)
+$(DEPN): $(SRCS)
 		rm -f "$@"
 		$(CC) $(CFLAGS) $(INCLUDES) -MM $^ -MF "$@"
 
-include .depend
+# include .depend
 
 init:
 	@mkdir -vp $(DIRS)
 
 run:
-	./$(MAIN)
+	$(MAIN)
 
-# End of File - Do Not Delete
+# End of Main Builds - Do not Delete
+
+# Tests
+
+## define the test files and directory
+_TESTS = test-btree test-btree2
+
+TESTDIR = test
+TESTSRCDIR = testsrc
+TESTOBJDIR = testobj
+TESTS = $(patsubst %,$(TESTDIR)/%,$(_TESTS))
+TEST_SRC = $(_TESTS:=.c)
+TEST_OBJ = $(_TESTS:=.o)
+TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
+TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
+
+# $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
+# 		$(CC) -I$(INCLDIR) -c $< -o $@
+
+build-tests: build $(TESTS)
+# @echo hello3
+# $(CC) $(CFLAGS) $(INCLUDES) -o $(TESTS) $(TESTOBJS) $(OBJSD) $(LFLAGS) $(LIBS)
+# @echo  tests have been compiled
+
+$(TESTS): %: $(TESTOBJS)
+		@echo hello2
+		$(CC) $(CFLAGS) $(INCLUDES) -o $@ $<
+
+# $(TESTS): $(TESTOBJS)
+# 		$(CC) $(CFLAGS) $(INCLUDES) -o $(TESTS) $(TESTOBJS) $(OBJSD) $(LFLAGS) $(LIBS)
+
+$(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
+		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# testSomething :
+# 	program.exe < input.txt > output.txt
+# 	diff correct.txt output.txt
+
+# # test-all: test-main test-btree
+
+
+# test-btree:
+
+# Clean --------------------------------------------------
+
+clean:
+		$(RM) ./$(OBJDIR)/*.o
+		$(RM) ./$(EXECDIR)/*
+		$(RM) ./$(TESTOBJDIR)/*.o
+		$(RM) ./$(TESTDIR)/*
+		$(RM) ./$(DEPNDIR)/$(_DEPN)
