@@ -150,9 +150,11 @@ test-all:$(TESTDIR)/*
 					$${file} < $${TESTINFILE} > $${TESTOUTFILE}; \
 				fi ; \
 			else \
-				echo "Running no-input test:  $${file} "; \
+				echo "$${file} > $${TESTOUTFILE}"; \
+				$${file} > $${TESTOUTFILE}; \
 			fi ; \
 		done > ${LOGSDIR}/test-all.log
+		@echo "Test Results: ${LOGSDIR}/test-all.log and $(TESTOUTPUTDIR)/*.txt"
 
 # Clean 
 
