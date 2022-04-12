@@ -4,6 +4,8 @@
 # $: make init			## generate default required dir structure
 # $: make build			## builds executable file 'cunix'
 # $: make run			## runs 'cunix' with default arguments
+#
+# $: make printrun		## prints the run command (for use with args, etc.)	
 # $: make depend		## generates dependencies for all files in the src directory
 # $: make clean 		## removes all files in the current directory       	
 # $: make help			## shows help options
@@ -66,7 +68,7 @@ EXECOBJS = $(patsubst %,$(EXECOBJDIR)/%,$(EXEC_OBJS))
 
 # EXECS build rules
 
-.PHONY: depend clean test all build
+.PHONY: init depend clean test all build run build-tests test-all printrun
 
 build: $(OBJS) $(EXECS) 
 
@@ -97,6 +99,9 @@ init:
 
 run:
 	$(EXECS)
+
+printrun:
+	@echo "./$(EXECS)"
 
 # End of EXECS Builds - Do not Delete
 
@@ -172,21 +177,14 @@ test-all:$(TESTDIR)/*
 				echo "$${DIFFCOMMAND}" ; \
 				$${DIFFCOMMAND} ; \
 			fi ; \
+			echo "output: $${TESTOUTFILE}" ; \
 		done >&1 | tee ${LOGSDIR}/test-all.log
 		@echo "All Test Results: ${LOGSDIR}/test-all.log and $(TESTOUTPUTDIR)/*.txt"
 
-testit:$(TESTDIR)/*
-		i=0 ;
+printtests: $(TESTDIR)/*
 		for file in $^ ; do \
-			i=$$((i+1)) ; \
-			printf '%20s\n' | tr ' ' - ; \
-			printf "Test: %05d\n" $${i} ; \
-			ISINFILE=false  \
-			ISOUTFILE=false   \
-			ISDIFFFILE=false; \
-			ISARGFILE=false ; \
+			echo ./$${file} ; \
 		done
-
 
 # Clean 
 
