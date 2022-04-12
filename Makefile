@@ -134,40 +134,6 @@ $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
 		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 test-all:$(TESTDIR)/*
-		i=0
-		for file in $^ ; do \
-			i=$$((i+1)) ;\
-			TESTINFILE="$${file//$(TESTDIR)\//$(TESTINPUTDIR)/}.txt"; \
-			TESTOUTFILE="$${file//$(TESTDIR)\//$(TESTOUTPUTDIR)/}.txt"; \
-			TESTDIFFFILE="$${file//$(TESTDIR)\//$(TESTDIFFDIR)/}.txt"; \
-			TESTARGFILE="$${file//$(TESTDIR)\//$(TESTARGDIR)/}.txt"; \
-			printf '%20s\n' | tr ' ' - ; \
-			printf "Test: %05d\n" $${i} ; \
-			if [ -f "$${TESTINFILE}" ] ; then \
-				if [ -f "$${TESTDIFFFILE}" ] ; then \
-					echo "$${file} < $${TESTINFILE} > $${TESTOUTFILE}"; \
-					echo "diff $${TESTDIFFFILE} $${TESTOUTFILE}"; \
-					$${file} < $${TESTINFILE} > $${TESTOUTFILE}; \
-					diff $${TESTDIFFFILE} $${TESTOUTFILE}; \
-				else \
-					echo "$${file} < $${TESTINFILE} > $${TESTOUTFILE}"; \
-					$${file} < $${TESTINFILE} > $${TESTOUTFILE}; \
-				fi ; \
-			else \
-				echo "$${file} > $${TESTOUTFILE}"; \
-				$${file} > $${TESTOUTFILE}; \
-			fi ; \
-		done > ${LOGSDIR}/test-all.log
-		@echo "Test Results: ${LOGSDIR}/test-all.log and $(TESTOUTPUTDIR)/*.txt"
-
-#objective: ./testx $(cat test-argpar-args.txt) < test-argpar-in.txt > test-argpar-out.txt
-# echo "$${BASHCOMMAND}" ; \
-# echo "$${DIFFCOMMAND}" ; \
-# $${BASHCOMMAND} ; \
-# $${DIFFCOMMAND} ; \
-# BASHCOMMAND="$${BASHCOMMAND} < $${TESTINFILE}"; \
-
-testall:$(TESTDIR)/*
 		i=0 ;
 		for file in $^ ; do \
 			i=$$((i+1)) ; \
