@@ -23,7 +23,9 @@ help:
 	@echo "	test-all:		runs all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testdiff,depn}
+DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testdiff,depn,logs}
+
+LOGSDIR=logs
 
 # define the C compiler to use
 CC = gcc
@@ -112,6 +114,12 @@ TEST_OBJ = $(_TESTS:=.o)
 TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
 TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
 
+TESTINPUTDIR = testin
+TESTOUTPUTDIR = testout
+TEST_FILES = $(_TESTS:=.txt)
+TESTINS = $(patsubst %,$(TESTINPUTDIR)/%,$(TEST_FILES))
+
+TESTDIFFDIR=testdiff
 
 ## build and run tests
 build-tests: build $(TESTS)
@@ -122,12 +130,29 @@ $(TESTS): %: $(TESTOBJS)
 $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
 		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-test-all:  $(TESTDIR)/*
+test-all:$(TESTDIR)/*
+		i=0
 		for file in $^ ; do \
-			echo "Running test: " $${file} ; \
-			$${file} ; \
-		done
-
+			i=$$((i+1)) ;\
+			TESTINFILE="$${file//$(TESTDIR)\//$(TESTINPUTDIR)/}.txt"; \
+			TESTOUTFILE="$${file//$(TESTDIR)\//$(TESTOUTPUTDIR)/}.txt"; \
+			TESTDIFFFILE="$${file//$(TESTDIR)\//$(TESTDIFFDIR)/}.txt"; \
+			printf '%20s\n' | tr ' ' - ; \
+			printf "Test: %05d\n" $${i} ; \
+			if [ -f "$${TESTINFILE}" ] ; then \
+				if [ -f "$${TESTDIFFFILE}" ] ; then \
+					echo "$${file} < $${TESTINFILE} > $${TESTOUTFILE}"; \
+					echo "diff $${TESTDIFFFILE} $${TESTOUTFILE}"; \
+					$${file} < $${TESTINFILE} > $${TESTOUTFILE}; \
+					diff $${TESTDIFFFILE} $${TESTOUTFILE}; \
+				else \
+					echo "$${file} < $${TESTINFILE} > $${TESTOUTFILE}"; \
+					$${file} < $${TESTINFILE} > $${TESTOUTFILE}; \
+				fi ; \
+			else \
+				echo "Running no-input test:  $${file} "; \
+			fi ; \
+		done > ${LOGSDIR}/test-all.log
 
 # Clean 
 
@@ -137,4 +162,6 @@ clean:
 		$(RM) ./$(EXECOBJDIR)/*.o
 		$(RM) ./$(TESTOBJDIR)/*.o
 		$(RM) ./$(TESTDIR)/*
+		$(RM) ./$(TESTOUTPUTDIR)/*
+		$(RM) ./$(LOGSDIR)/*
 		$(RM) ./$(DEPNDIR)/$(_DEPN)

@@ -6,6 +6,7 @@
 # $: make init			## generate default required dir structure
 # $: make build			## builds executable file 'cunix'
 # $: make run			## runs 'cunix' with default arguments
+#
 # $: make depend		## generates dependencies for all files in src
 # $: make clean 		## removes all files in the current directory       	
 # $: make help			## shows help options
