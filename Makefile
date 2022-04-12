@@ -20,9 +20,10 @@ help:
 	@echo "	depend:			generates dependencies for all files in the src directory"
 	@echo "	clean:			removes all files in the current directory"
 	@echo "	build-tests:	builds all tests"
+	@echo "	test-all:		runs all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testout,depn}
+DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testdiff,depn}
 
 # define the C compiler to use
 CC = gcc
