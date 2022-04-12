@@ -1,13 +1,15 @@
 # Make file for C-Unix Project 2022
 # Pysogge
 # 
-# $: make init		## generate default required dir structure
-# $: make build		## builds executable file 'cunix'
-# $: make run		## runs 'cunix' with default arguments
-# $: make depend	## generates dependencies for all files in the src directory
-# $: make clean 	## removes all files in the current directory       	
-# $: make test		## builds and runs all tests
-# $: make help		## shows help options
+# $: make init			## generate default required dir structure
+# $: make build			## builds executable file 'cunix'
+# $: make run			## runs 'cunix' with default arguments
+# $: make depend		## generates dependencies for all files in the src directory
+# $: make clean 		## removes all files in the current directory       	
+# $: make help			## shows help options
+# 
+# $: make build-tests	## builds all tests
+# $: make test-all		## runs all tests
 #
 
 help:
@@ -20,7 +22,7 @@ help:
 	@echo "	build-tests:	builds all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,depn}
+DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testout,depn}
 
 # define the C compiler to use
 CC = gcc
@@ -39,43 +41,40 @@ LFLAGS = -L$(LIBDIR)
 
 # define the C source files
 SRCDIR = src
-_SRCS = main.c btree.c
+_SRCS = btree.c
 SRCS = $(patsubst %,$(SRCDIR)/%,$(_SRCS))
 
 # define the C object files (.c => .o)
 OBJDIR = obj
 _OBJS = $(_SRCS:.c=.o)
-OBJS = $(SRCS:.c=.o)
-OBJSD = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
+# OBJS = $(SRCS:.c=.o)
+OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
-
-# define the executable file 
-_MAIN = cunix
+# define the executable files
+_EXECS = cunix
 EXECDIR = exc
-MAIN = $(patsubst %,$(EXECDIR)/%,$(_MAIN))
+EXECSRCDIR = $(EXECDIR:=src)
+EXECOBJDIR = $(EXECDIR:=obj)
+EXECS = $(patsubst %,$(EXECDIR)/%,$(_EXECS))
+EXEC_SRCS = $(_EXECS:=.c)
+EXEC_OBJS = $(_EXECS:=.o)
+EXECSRCS = $(patsubst %,$(EXECSRCDIR)/%,$(EXEC_SRCS))
+EXECOBJS = $(patsubst %,$(EXECOBJDIR)/%,$(EXEC_OBJS))
 
-# TESTDIR = test
-# TESTSRCDIR = testsrc
-# TESTOBJDIR = testobj
-# TESTS = $(patsubst %,$(TESTDIR)/%,$(_TESTS))
-# TEST_SRC = $(_TESTS:=.c)
-# TEST_OBJ = $(_TESTS:=.o)
-# TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
-# TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
+# EXECS build rules
 
-# main build rules
+.PHONY: depend clean test all build
 
-.PHONY: depend clean test all
+build: $(OBJS) $(EXECS) 
 
-build:    $(MAIN)
-		$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJSD) $(LFLAGS) $(LIBS)
-		@echo  cunix has been compiled
+$(EXECS): %: $(EXECOBJS)
+		$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(OBJS)
 
-$(MAIN): $(OBJSD)
-		$(CC) $(CFLAGS) $(INCLUDES) -o $(MAIN) $(OBJSD) $(LFLAGS) $(LIBS)
+$(EXECOBJDIR)/%.o: $(EXECSRCDIR)/%.c
+		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
-		$(CC) -I$(INCLDIR) -c $< -o $@
+		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 ## Dependency generation rules
 
@@ -94,9 +93,9 @@ init:
 	@mkdir -vp $(DIRS)
 
 run:
-	$(MAIN)
+	$(EXECS)
 
-# End of Main Builds - Do not Delete
+# End of EXECS Builds - Do not Delete
 
 # Tests
 
@@ -112,38 +111,29 @@ TEST_OBJ = $(_TESTS:=.o)
 TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
 TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
 
-# $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
-# 		$(CC) -I$(INCLDIR) -c $< -o $@
 
+## build and run tests
 build-tests: build $(TESTS)
-# @echo hello3
-# $(CC) $(CFLAGS) $(INCLUDES) -o $(TESTS) $(TESTOBJS) $(OBJSD) $(LFLAGS) $(LIBS)
-# @echo  tests have been compiled
 
 $(TESTS): %: $(TESTOBJS)
-		@echo hello2
-		$(CC) $(CFLAGS) $(INCLUDES) -o $@ $<
-
-# $(TESTS): $(TESTOBJS)
-# 		$(CC) $(CFLAGS) $(INCLUDES) -o $(TESTS) $(TESTOBJS) $(OBJSD) $(LFLAGS) $(LIBS)
+		$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(OBJS)
 
 $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
 		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# testSomething :
-# 	program.exe < input.txt > output.txt
-# 	diff correct.txt output.txt
+test-all:  $(TESTDIR)/*
+		for file in $^ ; do \
+			echo "Running test: " $${file} ; \
+			$${file} ; \
+		done
 
-# # test-all: test-main test-btree
 
-
-# test-btree:
-
-# Clean --------------------------------------------------
+# Clean 
 
 clean:
 		$(RM) ./$(OBJDIR)/*.o
 		$(RM) ./$(EXECDIR)/*
+		$(RM) ./$(EXECOBJDIR)/*.o
 		$(RM) ./$(TESTOBJDIR)/*.o
 		$(RM) ./$(TESTDIR)/*
 		$(RM) ./$(DEPNDIR)/$(_DEPN)
