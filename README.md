@@ -12,7 +12,6 @@
 # 
 # $: make build-tests	## builds all tests
 # $: make test-all		## runs all tests
-#
 ```
 
 ## Run 'cunix' manually with default arguments (after build)
