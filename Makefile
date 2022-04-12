@@ -23,7 +23,7 @@ help:
 	@echo "	test-all:		runs all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testdiff,depn,logs}
+DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testargs,testdiff,depn,logs}
 
 LOGSDIR=logs
 
@@ -103,7 +103,7 @@ run:
 # Tests
 
 ## define the test files and directory
-_TESTS = test-btree test-btree2
+_TESTS = test-btree test-btree2 test-argpar
 
 TESTDIR = test
 TESTSRCDIR = testsrc
@@ -119,12 +119,15 @@ TESTOUTPUTDIR = testout
 TEST_FILES = $(_TESTS:=.txt)
 TESTINS = $(patsubst %,$(TESTINPUTDIR)/%,$(TEST_FILES))
 
+TESTARGDIR = testargs
+TESTARGS = $(patsubst %,$(TESTARGDIR)/%,$(TEST_FILES))
+
 TESTDIFFDIR=testdiff
 
 ## build and run tests
 build-tests: build $(TESTS)
 
-$(TESTS): %: $(TESTOBJS)
+$(TESTDIR)/%: $(TESTOBJDIR)/%.o
 		$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(OBJS)
 
 $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
@@ -137,6 +140,7 @@ test-all:$(TESTDIR)/*
 			TESTINFILE="$${file//$(TESTDIR)\//$(TESTINPUTDIR)/}.txt"; \
 			TESTOUTFILE="$${file//$(TESTDIR)\//$(TESTOUTPUTDIR)/}.txt"; \
 			TESTDIFFFILE="$${file//$(TESTDIR)\//$(TESTDIFFDIR)/}.txt"; \
+			TESTARGFILE="$${file//$(TESTDIR)\//$(TESTARGDIR)/}.txt"; \
 			printf '%20s\n' | tr ' ' - ; \
 			printf "Test: %05d\n" $${i} ; \
 			if [ -f "$${TESTINFILE}" ] ; then \
@@ -155,6 +159,68 @@ test-all:$(TESTDIR)/*
 			fi ; \
 		done > ${LOGSDIR}/test-all.log
 		@echo "Test Results: ${LOGSDIR}/test-all.log and $(TESTOUTPUTDIR)/*.txt"
+
+#objective: ./testx $(cat test-argpar-args.txt) < test-argpar-in.txt > test-argpar-out.txt
+# echo "$${BASHCOMMAND}" ; \
+# echo "$${DIFFCOMMAND}" ; \
+# $${BASHCOMMAND} ; \
+# $${DIFFCOMMAND} ; \
+# BASHCOMMAND="$${BASHCOMMAND} < $${TESTINFILE}"; \
+
+testall:$(TESTDIR)/*
+		i=0 ;
+		for file in $^ ; do \
+			i=$$((i+1)) ; \
+			printf '%20s\n' | tr ' ' - ; \
+			printf "Test: %05d\n" $${i} ; \
+			ISINFILE=false ; \
+			ISDIFFFILE=false ; \
+			ISARGFILE=false ; \
+			TESTINFILE="$${file//$(TESTDIR)\//$(TESTINPUTDIR)/}.txt"; \
+			TESTOUTFILE="$${file//$(TESTDIR)\//$(TESTOUTPUTDIR)/}.txt"; \
+			TESTDIFFFILE="$${file//$(TESTDIR)\//$(TESTDIFFDIR)/}.txt"; \
+			TESTARGFILE="$${file//$(TESTDIR)\//$(TESTARGDIR)/}.txt"; \
+			if [ -f "$${TESTARGFILE}" ] ; then \
+				ISARGFILE=true ; \
+			fi ; \
+			if [ -f "$${TESTINFILE}" ] ; then \
+				ISINFILE=true ; \
+			fi ; \
+			if [ -f "$${TESTDIFFFILE}" ] ; then \
+				ISDIFFFILE=true ; \
+			fi ; \
+			BASHCOMMAND="$${file}" ; \
+			DIFFCOMMAND="" ; \
+			if $${ISARGFILE} ; then \
+				BASHCOMMAND="$${BASHCOMMAND} $$(cat $${TESTARGFILE})"; \
+			fi ; \
+			if $${ISINFILE} ; then \
+				echo "$${BASHCOMMAND} < $${TESTINFILE} > $${TESTOUTFILE}" ; \
+				$${BASHCOMMAND} < $${TESTINFILE} > $${TESTOUTFILE}; \
+			else \
+				echo "$${BASHCOMMAND} > $${TESTOUTFILE}" ; \
+				$${BASHCOMMAND} > $${TESTOUTFILE}; \
+			fi ; \
+			if $${ISDIFFFILE} ; then \
+				DIFFCOMMAND="diff $${TESTDIFFFILE} $${TESTOUTFILE} "; \
+				echo "$${DIFFCOMMAND}" ; \
+				$${DIFFCOMMAND} ; \
+			fi ; \
+		done >&1 | tee ${LOGSDIR}/test-all.log
+		@echo "All Test Results: ${LOGSDIR}/test-all.log and $(TESTOUTPUTDIR)/*.txt"
+
+testit:$(TESTDIR)/*
+		i=0 ;
+		for file in $^ ; do \
+			i=$$((i+1)) ; \
+			printf '%20s\n' | tr ' ' - ; \
+			printf "Test: %05d\n" $${i} ; \
+			ISINFILE=false  \
+			ISOUTFILE=false   \
+			ISDIFFFILE=false; \
+			ISARGFILE=false ; \
+		done
+
 
 # Clean 
 
