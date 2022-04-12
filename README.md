@@ -22,6 +22,7 @@
 ```
 
 ## Dir Structure
+```bash
 - src/      ## source files for functions, structs, etc.
 - excsrc/   ## source files for executables (i.e. with main function)
 - testsrc/  ## source files for test executables (also with main functions)
@@ -41,3 +42,4 @@
 - lib/      ## libraries  
 - depn/     ## dependencies list dir
 - stash/    ## stash dir (an untracked dir for working local files)
+```
