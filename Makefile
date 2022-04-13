@@ -108,7 +108,7 @@ printrun:
 # Tests
 
 ## define the test files and directory
-_TESTS = test-btree test-btree2 test-argpar
+_TESTS = test-btree test-btree2 test-argpar test-input_int_array
 
 TESTDIR = test
 TESTSRCDIR = testsrc

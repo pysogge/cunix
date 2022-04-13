@@ -1,15 +1,14 @@
 #ifndef BTREE
 #define BTREE
 
-/* 
+/*
 a binary tree where nodes of the same value s
 imply increment the count member, rather than allocating a new node
 */
 
-//comment
+// comment
 
-typedef struct Btree
-{
+typedef struct Btree {
     int nvalue;
     int count;
     struct Btree *left;
