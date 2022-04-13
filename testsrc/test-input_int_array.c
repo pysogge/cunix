@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAXARRLEN 100
+#define MAXARRLEN 160
 #define STARTARRLEN 10
+#define GROWTHFACTOR 2
 
 typedef struct vec {
     int *arr;
@@ -25,13 +26,13 @@ int add_to_vec(vec *Vec, int n) {
         } else {
             int *new_arr;
             int old_len = Vec->len;
-            size_t new_len = (size_t)old_len * 10;
+            size_t new_len = (size_t)old_len * GROWTHFACTOR;
             new_arr = (int *)calloc(new_len, sizeof(int));
             for (int i = 0; i < old_len; i++) {
                 new_arr[i] = Vec->arr[i];
             }
             int *old_arr = Vec->arr;
-            Vec->arr = realloc(new_arr, new_len);
+            Vec->arr = (int *)realloc(new_arr, new_len);
             free(old_arr);
         }
     }
@@ -47,8 +48,8 @@ int main(int argc, char *argv[]) {
     vec *new_vec = make_vec();
     while ((scanf("%d", &n)) > 0) {
         // printf("[%d]", n);
-        add_to_vec(new_vec,n);
-        printf("[%d]: [%d]\n",i,new_vec->arr[i]);
+        add_to_vec(new_vec, n);
+        printf("[%d]: [%d]\n", i, new_vec->arr[i]);
         i++;
     }
 
