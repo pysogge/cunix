@@ -141,7 +141,7 @@ $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
 test-all:$(TESTDIR)/*
 		i=0 ;
 		for file in $^ ; do \
-			i=$$(i+1) ; \
+			i=$$((i+1)) ; \
 			printf '%20s\n' | tr ' ' - ; \
 			printf "Test: %05d\n" $${i} ; \
 			ISINFILE=false ; \
