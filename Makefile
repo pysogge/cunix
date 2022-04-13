@@ -25,7 +25,7 @@ help:
 	@echo "	test-all:		runs all tests"
 
 # default dir structure
-DIRS = {include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testargs,testdiff,depn,logs}
+DIRS = ./{include,input,output,lib,obj,src,excsrc,excobj,exc,stash,test,testsrc,testobj,testin,testout,testargs,testdiff,depn,logs}
 
 LOGSDIR=logs
 
