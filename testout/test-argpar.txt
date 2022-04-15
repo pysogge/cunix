@@ -1,6 +1,0 @@
-Arg: [002]:hello
-Arg: [003]:my
-Arg: [004]:name
-Arg: [005]:is
-ab c d 
-e f.

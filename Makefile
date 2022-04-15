@@ -14,6 +14,10 @@
 # $: make test-all		## runs all tests
 #
 
+# targets
+.PHONY: init depend clean test all build run build-tests test-all printrun help
+
+# help
 help:
 	@echo "Usage: make [target]"
 	@echo "	init:			generate default required dir structure"
@@ -24,52 +28,92 @@ help:
 	@echo "	build-tests:	builds all tests"
 	@echo "	test-all:		runs all tests"
 
-# default dir structure
-DIRS =  include input output lib obj src excsrc excobj exc stash test testsrc testobj testin testout testargs testdiff depn logs
+###################### defines ######################
+# define the executable files (will generate a .c execsrc file as well)
+_EXECS = cunix
 
-LOGSDIR=logs
+# define the C object (non-executable) source files
+_SRCS:=btree.c
+
+# define test files 
+_TESTS:=test-btree test-btree2 test-argpar test-input_int_array
+
+# define dependency text file
+_DEPN = .depend
 
 # define the C compiler to use
-CC = gcc
+CC:=gcc
 
 # define any compile-time flags
-CFLAGS = -Wall -g
-
-# define directories containing header files other than /usr/include
-INCLDIR = include
-INCLUDES = -I$(INCLDIR)
+CFLAGS:=-Wall -g
 
 # define library paths in addition to /usr/lib
-LIBDIR = lib
-LIBS = -lutil
-LFLAGS = -L$(LIBDIR)
+LIBS:=-lutil
+LFLAGS:=-L$(LIBDIR)
 
-# define the C source files
-SRCDIR = src
-_SRCS = btree.c
-SRCS = $(patsubst %,$(SRCDIR)/%,$(_SRCS))
-
-# define the C object files (.c => .o)
-OBJDIR = obj
-_OBJS = $(_SRCS:.c=.o)
-# OBJS = $(SRCS:.c=.o)
-OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
-
-# define the executable files
-_EXECS = cunix
-EXECDIR = exc
+# define directories containing header files other than /usr/include
+SRCDIR:=src
+OBJDIR:=obj
+EXECDIR:=exc
 EXECSRCDIR = $(EXECDIR:=src)
 EXECOBJDIR = $(EXECDIR:=obj)
-EXECS = $(patsubst %,$(EXECDIR)/%,$(_EXECS))
+
+LIBDIR:=lib
+DEPNDIR:=depn
+INCLDIR:=include
+
+INPUTDIR:=input
+OUTPUTDIR:=output
+
+LOGSDIR:=logs
+
+TESTDIR:=test
+TESTSRCDIR:=testsrc
+TESTOBJDIR:=testobj
+
+TESTINPUTDIR:=testin
+TESTOUTPUTDIR:=testout
+TESTDIFFDIR:=testdiff
+TESTARGDIR:= testargs
+
+STASH:=stash
+
+# default dir structure
+DIRS:={$(INCLDIR),$(INPUTDIR),$(OUTPUTDIR),$(LIBDIR),$(OBJDIR),$(SRCDIR),$(EXECSRCDIR),$(EXECOBJDIR),$(EXECDIR),$(STASH),$(TESTDIR),$(TESTSRCDIR),$(TESTOBJDIR),$(TESTINPUTDIR),$(TESTOUTPUTDIR),$(TESTARGDIR),$(TESTDIFFDIR),$(DEPNDIR),$(LOGSDIR)}
+
+###################### computes ######################
+# compute the object filepaths
+SRCS = $(patsubst %,$(SRCDIR)/%,$(_SRCS))
+
+# compute the C object files (.c => .o)
+_OBJS = $(_SRCS:.c=.o)
+OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
+
+# compute executable source and object filepaths
 EXEC_SRCS = $(_EXECS:=.c)
 EXEC_OBJS = $(_EXECS:=.o)
+EXECS = $(patsubst %,$(EXECDIR)/%,$(_EXECS))
 EXECSRCS = $(patsubst %,$(EXECSRCDIR)/%,$(EXEC_SRCS))
 EXECOBJS = $(patsubst %,$(EXECOBJDIR)/%,$(EXEC_OBJS))
 
-# EXECS build rules
+# compute include command
+INCLUDES = -I$(INCLDIR)
 
-.PHONY: init depend clean test all build run build-tests test-all printrun
+# compute dependency generation paths
+DEPN = $(patsubst %,$(DEPNDIR)/%,$(_DEPN))
 
+# compute test source filepaths
+TESTS = $(patsubst %,$(TESTDIR)/%,$(_TESTS))
+TEST_SRC = $(_TESTS:=.c)
+TEST_OBJ = $(_TESTS:=.o)
+TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
+TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
+TEST_FILES = $(_TESTS:=.txt)
+TESTINS = $(patsubst %,$(TESTINPUTDIR)/%,$(TEST_FILES))
+TESTARGS = $(patsubst %,$(TESTARGDIR)/%,$(TEST_FILES))
+
+###################### rules ######################
+# build rules
 build: $(OBJS) $(EXECS) 
 
 $(EXECS): %: $(EXECOBJS)
@@ -81,19 +125,14 @@ $(EXECOBJDIR)/%.o: $(EXECSRCDIR)/%.c
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-## Dependency generation rules
-
-DEPNDIR = depn
-_DEPN = .depend
-DEPN = $(patsubst %,$(DEPNDIR)/%,$(_DEPN))
+# dependency generation rules
 depend: $(DEPN)
 
-$(DEPN): $(SRCS)
+.depend: $(SRCS)
 		rm -f "$@"
 		$(CC) $(CFLAGS) $(INCLUDES) -MM $^ -MF "$@"
 
-# include .depend
-
+# initialization of dirs
 init:
 	@mkdir -vp $(DIRS)
 
@@ -102,32 +141,6 @@ run:
 
 printrun:
 	@echo "./$(EXECS)"
-
-# End of EXECS Builds - Do not Delete
-
-# Tests
-
-## define the test files and directory
-_TESTS = test-btree test-btree2 test-argpar test-input_int_array
-
-TESTDIR = test
-TESTSRCDIR = testsrc
-TESTOBJDIR = testobj
-TESTS = $(patsubst %,$(TESTDIR)/%,$(_TESTS))
-TEST_SRC = $(_TESTS:=.c)
-TEST_OBJ = $(_TESTS:=.o)
-TESTSRCS = $(patsubst %,$(TESTSRCDIR)/%,$(TEST_SRC))
-TESTOBJS = $(patsubst %,$(TESTOBJDIR)/%,$(TEST_OBJ))
-
-TESTINPUTDIR = testin
-TESTOUTPUTDIR = testout
-TEST_FILES = $(_TESTS:=.txt)
-TESTINS = $(patsubst %,$(TESTINPUTDIR)/%,$(TEST_FILES))
-
-TESTARGDIR = testargs
-TESTARGS = $(patsubst %,$(TESTARGDIR)/%,$(TEST_FILES))
-
-TESTDIFFDIR=testdiff
 
 ## build and run tests
 build-tests: build $(TESTS)
@@ -138,6 +151,7 @@ $(TESTDIR)/%: $(TESTOBJDIR)/%.o
 $(TESTOBJDIR)/%.o: $(TESTSRCDIR)/%.c
 		$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
+# run all tests
 test-all:$(TESTDIR)/*
 		i=0 ;
 		for file in $^ ; do \
@@ -186,8 +200,7 @@ printtests: $(TESTDIR)/*
 			echo ./$${file} ; \
 		done
 
-# Clean 
-
+# clean 
 clean:
 		$(RM) ./$(OBJDIR)/*.o
 		$(RM) ./$(EXECDIR)/*
@@ -197,3 +210,10 @@ clean:
 		$(RM) ./$(TESTOUTPUTDIR)/*
 		$(RM) ./$(LOGSDIR)/*
 		$(RM) ./$(DEPNDIR)/$(_DEPN)
+
+# remove temporary dirs (obj, output)
+uninit:
+		$(RM) -rf ./$(OBJDIR)
+		$(RM) -rf ./$(EXECOBJDIR)
+		$(RM) -rf ./$(TESTOBJDIR)
+		$(RM) -rf ./$(TESTOUTPUTDIR)/*
